@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>MateObra</title>
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="description" content="Calculadora de materiales de construcción.">
+<meta name="keywords" content="">
+<meta name="author" content="Guadalupe Guzmán Tovar, Emmanuel Lopez Cabrera">Shell Command: Install 'code' command in PATH
+<link rel="stylesheet" href="styles.css">
+<script src="script.js" defer></script>
+
+</head>
+<body>
+<header class="site">
+  <h1>MateObra EG</h1>
+  <form action="search.html" method="get">
+  </form>
+</header>
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">Interfaces I — Proyecto práctico</div>
+    <h1>MateObra<br>Calcula tu construccion</h1>
+    <p> Aca podras calcular tus construcciones, con seguridad y sin problemas </p>
+  </header>
+
+  <div class="card">
+
+    
+    <section id="screen-auth" class="screen active">
+      <div class="tabs">
+        <button class="tab active" id="tab-login" onclick="mostrarTab('login')">Iniciar sesión</button>
+        <button class="tab" id="tab-registro" onclick="mostrarTab('registro')">Registrate</button>
+      </div>
+
+      <div id="form-login">
+        <label for="login-user">Usuario</label>
+        <input id="login-user" type="text" placeholder="usuario">
+        <label for="login-pass">Contraseña</label>
+        <input id="login-pass" type="password" placeholder="••••••••">
+        <button class="btn" onclick="iniciarSesion()">Entrar</button>
+        <div class="msg" id="login-msg"></div>
+        <div class="msg"><a href="javascript:void(0)" onclick="mostrarTab('recuperar1')" style="color:var(--muted); text-decoration:underline; cursor:pointer;">¿Olvidaste tu contraseña?</a></div>
+      </div>
+
+      <div id="form-registro" style="display:none;">
+        <label for="reg-user">Elegí un usuario</label>
+        <input id="reg-user" type="text" placeholder="usuario">
+        <label for="reg-pass">Elegí una contraseña</label>
+        <input id="reg-pass" type="password" placeholder="mínimo 4 caracteres">
+        <button class="btn" onclick="registrarUsuario()">Crear cuenta</button>
+        <div class="msg" id="reg-msg"></div>
+      </div>
+
+      <div id="form-recuperar1" style="display:none;">
+        <label for="rec-user">Usuario</label>
+        <input id="rec-user" type="text" placeholder="usuario">
+        <button class="btn" onclick="buscarUsuarioRecuperar()">Continuar</button>
+        <div class="msg" id="rec1-msg"></div>
+        <div class="msg"><a href="javascript:void(0)" onclick="mostrarTab('login')" style="color:var(--muted); text-decoration:underline; cursor:pointer;">Volver a inicio de sesión</a></div>
+      </div>
+
+      <div id="form-recuperar2" style="display:none;">
+        <label for="rec-nueva">Nueva contraseña</label>
+        <input id="rec-nueva" type="password" placeholder="mínimo 4 caracteres">
+        <button class="btn" onclick="restablecerPassword()">Cambiar contraseña</button>
+        <div class="msg" id="rec2-msg"></div>
+      </div>
+    </section>
+
+    
+    <section id="screen-menu" class="screen">
+      <div class="menu-head">
+        <h2>Menú principal</h2>
+        <div class="who">Sesión: <strong id="who-user"></strong> · <button onclick="cerrarSesion()">cerrar sesión</button></div>
+      </div>
+      <ul class="menu-list" id="menu-list"></ul>
+    </section>
+
+    
+    <section id="screen-calc" class="screen">
+      <div class="calc-head" id="calc-head"></div>
+      <h2 class="calc-title" id="calc-title"></h2>
+      <div id="calc-form"></div>
+      <div id="calc-result"></div>
+      <div class="actions">
+        <button class="btn ghost" onclick="volverAlMenu()">← Volver al menú</button>
+      </div>
+    </section>
+
+  </div>
+  <footer>Fundacion Escuela Tecnologicas Jesus Oviedo Perez </footer>
+</div>
+<footer class="site">© 2026 MateObra — Guadalupe Guzmán Tovar, Emmanuel Lopez Cabrera</footer>
+
+</body>
+</html>
