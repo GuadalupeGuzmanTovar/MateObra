@@ -1,12 +1,13 @@
-const USERS_KEY ='mateobra_usuarios';
+const API_AUTH = "http://localhost:8080/auth";
 
-let usuarios = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
 let usuarioActual = null;
 let usuarioRecuperando = null;
+let rolActual = null;
 
-function guardarUsuarios(){
-    localStorage.setItem(USERS_KEY, JSON.stringify(usuarios));
-}
+const PERMISOS = {
+    CLIENTE: [1, 6, 7, 8],
+    CONSTRUCTOR: [1, 2, 3, 4, 5, 6, 7, 8]
+};
 
 const MENU = [
     { id:1, texto:"Calcular muro de ladrillo" },
@@ -28,33 +29,57 @@ function mostrarTab(cual){
     document.getElementById('form-recuperar2').style.display = cual === 'recuperar2' ? 'block' : 'none';
 }
 
-function registrarUsuario(){
+async function registrarUsuario(){
     const u = document.getElementById('reg-user').value.trim();
     const p = document.getElementById('reg-pass').value;
+    const r = document.getElementById('reg-rol').value;
     const msg = document.getElementById('reg-msg');
 
     if(!u || !p){ msg.className='msg err'; msg.textContent='Completá usuario y contraseña.'; return; }
     if(p.length < 4){ msg.className='msg err'; msg.textContent='La contraseña necesita al menos 4 caracteres.'; return; }
-    if(usuarios.some(x => x.usuario === u)){ msg.className='msg err'; msg.textContent='Ese usuario ya existe.'; return; }
 
-    usuarios.push({ usuario:u, contrasena:p });
-    guardarUsuarios();
+    try {
+        const res = await fetch(`${API_AUTH}/registro`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ usuario: u, password: p })
+        });
+        const texto = await res.text();
 
-    msg.className='msg ok'; msg.textContent='Cuenta creada. Ahora podés iniciar sesión.';
-    document.getElementById('reg-user').value='';
-    document.getElementById('reg-pass').value='';
-    mostrarTab('login');
+        if(!res.ok){ msg.className='msg err'; msg.textContent = texto; return; }
+
+        msg.className='msg ok'; msg.textContent='Cuenta creada. Ahora podés iniciar sesión.';
+        document.getElementById('reg-user').value='';
+        document.getElementById('reg-pass').value='';
+        mostrarTab('login');
+    } catch (e) {
+        msg.className='msg err'; msg.textContent='No se pudo conectar con el servidor.';
+    }
 }
 
-function iniciarSesion(){
+async function iniciarSesion(){
     const u = document.getElementById('login-user').value.trim();
     const p = document.getElementById('login-pass').value;
     const msg = document.getElementById('login-msg');
-    const encontrado = usuarios.find(x => x.usuario === u && x.contrasena === p);
-    if(!encontrado){ msg.className='msg err'; msg.textContent='Usuario o contraseña incorrectos.'; return; }
-    usuarioActual = encontrado.usuario;
-    cambiarPantalla('screen-menu');
-    renderMenu();
+
+    try {
+        const res = await fetch(`${API_AUTH}/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ usuario: u, password: p })
+        });
+        const texto = await res.text();
+
+        if(!res.ok){ msg.className='msg err'; msg.textContent = texto; return; }
+
+        const datos = JSON.parse(texto);
+        usuarioActual = datos.usuario;
+        rolActual = datos.rol;
+        cambiarPantalla('screen-menu');
+        renderMenu();
+    } catch (e) {
+        msg.className='msg err'; msg.textContent='No se pudo conectar con el servidor.';
+    }
 }
 
 function cerrarSesion(){
@@ -63,35 +88,47 @@ function cerrarSesion(){
     mostrarTab('login');
 }
 
-function buscarUsuarioRecuperar(){
+async function buscarUsuarioRecuperar(){
     const u = document.getElementById('rec-user').value.trim();
     const msg = document.getElementById('rec1-msg');
-    const encontrado = usuarios.find(x => x.usuario === u);
 
-    if(!encontrado){ msg.className='msg err'; msg.textContent='Ese usuario no existe.'; return; }
+    try {
+        const res = await fetch(`${API_AUTH}/existe/${encodeURIComponent(u)}`);
+        if(!res.ok){ msg.className='msg err'; msg.textContent='Ese usuario no existe.'; return; }
 
-    usuarioRecuperando = u;
-    msg.className='msg'; msg.textContent='';
-    document.getElementById('rec-nueva').value = '';
-    mostrarTab('recuperar2');
+        usuarioRecuperando = u;
+        msg.className='msg'; msg.textContent='';
+        document.getElementById('rec-nueva').value = '';
+        mostrarTab('recuperar2');
+    } catch (e) {
+        msg.className='msg err'; msg.textContent='No se pudo conectar con el servidor.';
+    }
 }
 
-function restablecerPassword(){
+async function restablecerPassword(){
     const nueva = document.getElementById('rec-nueva').value;
     const msg = document.getElementById('rec2-msg');
-    const encontrado = usuarios.find(x => x.usuario === usuarioRecuperando);
 
-    if(!encontrado){ msg.className='msg err'; msg.textContent='Ocurrió un error, volvé a intentar.'; return; }
     if(nueva.length < 4){ msg.className='msg err'; msg.textContent='La nueva contraseña necesita al menos 4 caracteres.'; return; }
 
-    encontrado.contrasena = nueva;
-    guardarUsuarios();
+    try {
+        const res = await fetch(`${API_AUTH}/cambiar-password`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ usuario: usuarioRecuperando, password: nueva })
+        });
+        const texto = await res.text();
 
-    msg.className='msg ok'; msg.textContent='Contraseña actualizada. Ya podés iniciar sesión.';
-    setTimeout(()=>{
-        usuarioRecuperando = null;
-        mostrarTab('login');
-    }, 1200);
+        if(!res.ok){ msg.className='msg err'; msg.textContent = texto; return; }
+
+        msg.className='msg ok'; msg.textContent='Contraseña actualizada. Ya podés iniciar sesión.';
+        setTimeout(()=>{
+            usuarioRecuperando = null;
+            mostrarTab('login');
+        }, 1200);
+    } catch (e) {
+        msg.className='msg err'; msg.textContent='No se pudo conectar con el servidor.';
+    }
 }
 
 function cambiarPantalla(id){
@@ -276,3 +313,4 @@ function ejecutar(id){
             ${rows}
     </div>`;
 }
+

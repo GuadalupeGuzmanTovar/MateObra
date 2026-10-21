@@ -50,9 +50,17 @@
         <input id="reg-user" type="text" placeholder="usuario">
         <label for="reg-pass">Elegí una contraseña</label>
         <input id="reg-pass" type="password" placeholder="mínimo 4 caracteres">
-        <button class="btn" onclick="registrarUsuario()">Crear cuenta</button>
-        <div class="msg" id="reg-msg"></div>
-      </div>
+
+        <label for="reg-rol">Perfil</label>
+    <select id="reg-rol">
+      <option value="CLIENTE">Cliente</option>
+      <option value="CONSTRUCTOR">Constructor</option>
+    </select>
+
+    <button class="btn" onclick="registrarUsuario()">Crear cuenta</button>
+    <div class="msg" id="reg-msg"></div>
+    </div>
+      
 
       <div id="form-recuperar1" style="display:none;">
         <label for="rec-user">Usuario</label>
