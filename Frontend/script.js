@@ -149,6 +149,15 @@ function renderMenu(){
     li.appendChild(btn);
     ul.appendChild(li);
     });
+
+     const liH = document.createElement('li');
+    const btnH = document.createElement('button');
+    btnH.className = 'menu-item';
+    btnH.innerHTML = `<span class="num">★</span> Historial de cálculos`;
+    btnH.onclick = () => verHistorial();
+    liH.appendChild(btnH);
+    ul.insertBefore(liH, ul.lastElementChild);
+
 }
 
 function volverAlMenu(){
@@ -305,6 +314,19 @@ function ejecutar(id){
     else if(id === 6) resultado = calcularPisos(num('c-ancho'), num('c-largo'));
     else if(id === 7) resultado = calcularPintura(num('c-superficie'));
 
+        try {
+        const tipo = MENU.find(m => m.id === id).texto;
+        fetch("http://localhost:8080/historial", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                usuario: usuarioActual,
+                tipo: tipo,
+                resultado: JSON.stringify(resultado)
+            })
+        });
+    } catch (e) {}
+
     const rows = Object.entries(resultado).map(([k,v]) =>
     `<div class="ticket-row"><span>${k}</span><span class="v">${v}</span></div>`).join('');
     document.getElementById('calc-result').innerHTML = `
@@ -312,5 +334,30 @@ function ejecutar(id){
             <p class="ticket-title">Materiales necesarios</p>
             ${rows}
     </div>`;
+}
+
+async function verHistorial(){
+    cambiarPantalla('screen-historial');
+    const cont = document.getElementById('historial-lista');
+    cont.innerHTML = '<div class="ticket"><p class="ticket-title">Cargando...</p></div>';
+    try {
+        const res = await fetch(`http://localhost:8080/historial/${encodeURIComponent(usuarioActual)}`);
+        const datos = await res.json();
+        if(!datos.length){
+            cont.innerHTML = '<div class="ticket"><p class="ticket-title">Aún no hay cálculos</p></div>';
+            return;
+        }
+        cont.innerHTML = datos.map(c => {
+            let filas = '';
+            try {
+                filas = Object.entries(JSON.parse(c.resultado))
+                    .map(([k,v]) => `<div class="ticket-row"><span>${k}</span><span class="v">${v}</span></div>`).join('');
+            } catch(e) { filas = `<div class="ticket-row"><span>${c.resultado}</span></div>`; }
+            const fecha = new Date(c.fecha).toLocaleString('es');
+            return `<div class="ticket"><p class="ticket-title">${c.tipo} · ${fecha}</p>${filas}</div>`;
+        }).join('');
+    } catch(e) {
+        cont.innerHTML = '<div class="ticket"><p class="ticket-title">No se pudo cargar el historial</p></div>';
+    }
 }
 
